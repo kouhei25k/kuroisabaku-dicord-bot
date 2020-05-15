@@ -1,7 +1,6 @@
 
 import discord
 import datetime as dt
-import boss_time
 # 自分のBotのアクセストークンに置き換えてください
 TOKEN = 'NzEwNDgwMDUyMDY3ODkzMzgw.Xr1FHw.m3dinKkc5bWnyL6g-Mc6KF43yBM'
 
