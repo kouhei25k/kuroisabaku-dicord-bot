@@ -7,7 +7,6 @@ TOKEN = 'NzEwNDgwMDUyMDY3ODkzMzgw.Xr1FHw.m3dinKkc5bWnyL6g-Mc6KF43yBM'
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
 
-times = ["01:30"]
 bosses = {
     '/kuzaka': 'クザカ', '/nuberu': 'ヌーベル', '/kutumu': 'クツム', '/karanda': 'カランダ', '/opin': 'オピン', '/gamosu': 'ガーモス', '/muraka': 'ムラカ', '/gyunto': 'ギュント'
 }
@@ -54,14 +53,16 @@ async def on_ready():
 
 # 曜日取得
 weekday = dt.date.today().weekday()
-# 曜日取得
 nowtime = dt.datetime.now().strftime("%H:%M")
 
 # メッセージ受信時に動作する処理
 @client.event
 async def on_message(message):
-    # メッセージ送信者がBotだった場合は無視する
-    if message.author.bot:
+
+    weekday = dt.date.today().weekday()
+    nowtime = dt.datetime.now().strftime("%H:%M")
+   # メッセージ送信者がBotだった場合は無視する
+   if message.author.bot:
         return
     # 「/neko」と発言したら「にゃーん」が返る処理
     if message.content == '/neko':
@@ -71,6 +72,7 @@ async def on_message(message):
         await message.channel.send(weekday)
 
     if message.content == '/time':
+
         await message.channel.send(nowtime)
 
     if message.content == '/help':
@@ -86,6 +88,8 @@ async def on_message(message):
             await message.channel.send(f'{boss_name} ・・・ {bosses[boss_name]}')
 
     if message.content == '/boss':
+        weekday = dt.date.today().weekday()
+        nowtime = dt.datetime.now().strftime("%H:%M")
         await message.channel.send('今日のボス(ボスごと)')
         for boss in bosses_time_dict:
             boss_time = bosses_time_dict[boss]
