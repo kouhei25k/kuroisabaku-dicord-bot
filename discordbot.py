@@ -7,6 +7,7 @@ TOKEN = 'NzEwNDgwMDUyMDY3ODkzMzgw.Xr1FHw.m3dinKkc5bWnyL6g-Mc6KF43yBM'
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
 
+
 bosses = {
     '/kuzaka': 'クザカ', '/nuberu': 'ヌーベル', '/kutumu': 'クツム', '/karanda': 'カランダ', '/opin': 'オピン', '/gamosu': 'ガーモス', '/muraka': 'ムラカ', '/gyunto': 'ギュント'
 }
@@ -51,9 +52,16 @@ async def on_ready():
     # 起動したらターミナルにログイン通知が表示される
     print('ログインしました')
 
-# 曜日取得
-weekday = dt.date.today().weekday()
-nowtime = dt.datetime.now().strftime("%H:%M")
+
+async def reply(message):
+    reply = f'{message.author.mention} 呼んだ？'  # 返信メッセージの作成
+    await message.channel.send(reply)  # 返信メッセージを送信
+
+# 発言時に実行されるイベントハンドラを定義
+@client.event
+async def on_message(message):
+    if client.user in message.mentions:  # 話しかけられたかの判定
+        await reply(message)
 
 # メッセージ受信時に動作する処理
 @client.event
@@ -68,6 +76,10 @@ async def on_message(message):
     if message.content == '/neko':
         await message.channel.send('にゃーん')
 
+    if message.content == '/user':
+        user = message.author.mention + "\nhello"
+        await message.channel.send(user)
+
     if message.content == '/weekday':
         await message.channel.send(weekday)
 
@@ -76,41 +88,36 @@ async def on_message(message):
         await message.channel.send(nowtime)
 
     if message.content == '/help':
-        await message.channel.send('**コマンド一覧**')
-
-        await message.channel.send('--すべてのボス出現時間--')
-        await message.channel.send(' /boss・・・ボスごと')
-        await message.channel.send(' /boss-time・・・時間ごと')
-        await message.channel.send(' /boss-tm・・・明日のボスごと')
-        await message.channel.send(' /boss-time-tm・・・明日の時間ごと')
-        await message.channel.send('--個別ボス出現時間--')
+        help_message = message.author.mention + \
+            "\n**コマンド一覧 **\n--すべてのボス出現時間--\n/boss・・・ボスごと\n/boss-time・・・時間ごと\n/boss-tm・・・明日のボスごと\n/boss-time-tm・・・明日の時間ごと\n\n--個別ボス出現時間--"
         for boss_name in bosses:
-            await message.channel.send(f'{boss_name} ・・・ {bosses[boss_name]}')
+            help_message += f'\n{boss_name} ・・・ {bosses[boss_name]}'
+        await message.channel.send(help_message)
 
     if message.content == '/boss':
-        weekday = dt.date.today().weekday()
-        nowtime = dt.datetime.now().strftime("%H:%M")
-        await message.channel.send('今日のボス(ボスごと)')
+        boss_msg = message.author.mention + '\n今日のボス(ボスごと)'
         for boss in bosses_time_dict:
             boss_time = bosses_time_dict[boss]
             boss_today_times = [s for s in boss_time[weekday] if nowtime < s]
             if boss_today_times:
-                await message.channel.send(f'--{bosses[boss]}--')
+                boss_msg += f'\n--{bosses[boss]}--'
                 for boss_today_time in boss_today_times:
-                    await message.channel.send(boss_today_time)
+                    boss_msg += f'\n{boss_today_time}'
+        await message.channel.send(boss_msg)
 
     if message.content == '/boss-tm':
-        await message.channel.send('明日のボス(ボスごと)')
+        boss_tm_msg = message.author.mention + '\n明日のボス(ボスごと)'
         for boss in bosses_time_dict:
             boss_time = bosses_time_dict[boss]
             boss_today_times = [s for s in boss_time[weekday+1]]
             if boss_today_times:
-                await message.channel.send(f'--{bosses[boss]}--')
+                boss_tm_msg += f'\n--{bosses[boss]}--'
                 for boss_today_time in boss_today_times:
-                    await message.channel.send(boss_today_time)
+                    boss_tm_msg += f'\n{boss_today_time}'
+        await message.channel.send(boss_tm_msg)
 
     if message.content == '/boss-time':
-        await message.channel.send('今日のボス(時間ごと)')
+        boss_time_msg = message.author.mention + '\n今日のボス(時間ごと)'
         today_time_table = {"01:30": [], "11:00": [],
                             "16:00": [], "19:00": [], "23:00": []}
         for boss in bosses_time_dict:
@@ -121,12 +128,13 @@ async def on_message(message):
                     today_time_table[time].append(boss)
         for time in today_time_table.items():
             if time[1]:
-                await message.channel.send(f'--{time[0]}--')
+                boss_time_msg += f'\n--{time[0]}--'
                 for boss_name in time[1]:
-                    await message.channel.send(bosses[boss_name])
+                    boss_time_msg += f'\n{bosses[boss_name]}'
+        await message.channel.send(boss_time_msg)
 
     if message.content == '/boss-time-tm':
-        await message.channel.send('明日のボス(時間ごと)')
+        boss_time_tm_msg = message.author.mention + '\n明日のボス(時間ごと)'
         today_time_table = {"01:30": [], "11:00": [],
                             "16:00": [], "19:00": [], "23:00": []}
         for boss in bosses_time_dict:
@@ -137,29 +145,47 @@ async def on_message(message):
                     today_time_table[time].append(boss)
         for time in today_time_table.items():
             if time[1]:
-                await message.channel.send(f'--{time[0]}--')
+                boss_time_tm_msg += f'\n--{time[0]}--'
                 for boss_name in time[1]:
-                    await message.channel.send(bosses[boss_name])
+                    boss_time_tm_msg += f'\n{bosses[boss_name]}'
+        await message.channel.send(boss_time_tm_msg)
 
         # 個別のボス時間
+    # if message.content in bosses:
+    #     boss_time = bosses_time_dict[message.content]
+    #     boss_name_conv = bosses[message.content]
+    #     await message.channel.send(f'本日の{boss_name_conv}は')
+    #     today_time = [s for s in boss_time[weekday] if nowtime < s]
+    #     if not today_time:
+    #         await message.channel.send('ありません')
+    #     else:
+    #         for next_time in today_time:
+    #             await message.channel.send(next_time)
+    #     await message.channel.send('-----------')
+    #     await message.channel.send(f'明日の{boss_name_conv}は')
+    #     if not boss_time[weekday+1]:
+    #         await message.channel.send('ありません')
+    #     else:
+    #         for tmrw_time in boss_time[weekday+1]:
+    #             await message.channel.send(tmrw_time)
+
     if message.content in bosses:
         boss_time = bosses_time_dict[message.content]
         boss_name_conv = bosses[message.content]
-        await message.channel.send(f'本日の{boss_name_conv}は')
+        each_boss_msg = message.author.mention + f'\n本日の{boss_name_conv}は'
         today_time = [s for s in boss_time[weekday] if nowtime < s]
         if not today_time:
-            await message.channel.send('ありません')
+            each_boss_msg += '\nありません'
         else:
             for next_time in today_time:
-                await message.channel.send(next_time)
-
-        await message.channel.send('-----------')
-        await message.channel.send(f'明日の{boss_name_conv}は')
+                each_boss_msg += f'\n{next_time}'
+        each_boss_msg += f'\n-----------\n明日の{boss_name_conv}は'
         if not boss_time[weekday+1]:
-            await message.channel.send('ありません')
+            each_boss_msg += '\nありません'
         else:
             for tmrw_time in boss_time[weekday+1]:
-                await message.channel.send(tmrw_time)
+                each_boss_msg += f'\n{tmrw_time}'
+        await message.channel.send(each_boss_msg)
 
 
 # Botの起動とDiscordサーバーへの接続
