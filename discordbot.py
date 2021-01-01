@@ -2,7 +2,7 @@
 import discord
 import datetime as dt
 # 自分のBotのアクセストークンに置き換えてください
-TOKEN = 'NzEwNDgwMDUyMDY3ODkzMzgw.Xr1FHw.m3dinKkc5bWnyL6g-Mc6KF43yBM'
+TOKEN = '*************************'
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
